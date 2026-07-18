@@ -1,0 +1,46 @@
+name: Pages
+
+# This repo IS the published artifact: the de-branded build emitted by the
+# private source repo's `npm run build:public` (self-verifying trade-dress
+# check). Every push to main deploys to GitHub Pages; the first run also
+# enables Pages (configure-pages enablement).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage the site (exclude repo scaffolding)
+        run: rsync -a --exclude .git --exclude .github ./ _site/
+      - name: Enable / configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Smoke test the live site
+        run: |
+          curl -fsSL --retry 10 --retry-delay 6 --retry-all-errors \
+            "${{ steps.deployment.outputs.page_url }}" | grep -q "PLEXEN Scientific"
+          echo "Live: ${{ steps.deployment.outputs.page_url }}"

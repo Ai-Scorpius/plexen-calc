@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Production CSP (Phase 14): no eval (the Phase 3 parser replaced the
+         Function()-based evaluator) and no external hosts — the font is now
+         self-hosted (D0.8), so every byte comes from 'self' and the app runs
+         airplane-mode. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'">
+    <title>PLEXEN Scientific</title>
+    <meta name="description" content="A browser-based scientific calculator.">
+    <meta name="theme-color" content="#1c1c1f">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+    <link rel="stylesheet" href="css/calculator.css?v=8">
+</head>
+<body>
+    <div class="calculator" id="calculator">
+        <!-- Drag handle / title bar -->
+        <div class="title-bar" id="title-bar">
+            <span class="title-bar-text">PLE<span class="gold-x">X</span>EN Scientific</span>
+            <div class="title-bar-controls">
+                <button class="title-btn title-btn-minimize" id="btn-minimize" title="Minimize" aria-label="Minimize"><span aria-hidden="true">&ndash;</span></button>
+                <button class="title-btn title-btn-close" id="btn-close" title="Close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+        </div>
+
+        <div class="calc-body">
+            <!-- Branding (decorative — the title bar carries the accessible name) -->
+            <div class="brand-top" aria-hidden="true">
+                <div class="brand-name">PLE<span class="gold-x">X</span>EN</div>
+                <div class="brand-model">Scientific</div>
+            </div>
+            <div class="brand-tagline" aria-hidden="true">
+                <span class="tagline-text">NATURAL MATH DISPLAY</span>
+                <span class="tagline-edition">web edition</span>
+            </div>
+
+            <!-- Display -->
+            <div class="display-bezel">
+                <div class="display">
+                    <div class="display-status" role="group" aria-label="Status indicators">
+                        <span class="ind" data-ind="S" aria-label="Shift">S</span>
+                        <span class="ind" data-ind="A" aria-label="Alpha">A</span>
+                        <span class="ind" data-ind="M" aria-label="Independent memory">M</span>
+                        <span class="ind" data-ind="STO" aria-label="Store pending">STO</span>
+                        <span class="ind" data-ind="RCL" aria-label="Recall pending">RCL</span>
+                        <span class="ind" data-ind="STAT" aria-label="Statistics mode">STAT</span>
+                        <span class="ind" data-ind="Disp" aria-label="More statements">Disp</span>
+                        <span class="ind-right">
+                            <span class="ind" data-ind="up" aria-label="History up available">&#9650;</span>
+                            <span class="ind" data-ind="down" aria-label="History down available">&#9660;</span>
+                            <span class="ind" data-ind="D" aria-label="Degrees">D</span>
+                            <span class="ind" data-ind="R" aria-label="Radians">R</span>
+                            <span class="ind" data-ind="G" aria-label="Gradians">G</span>
+                            <span class="ind" data-ind="FIX" aria-label="Fixed decimals">FIX</span>
+                            <span class="ind" data-ind="SCI" aria-label="Scientific notation">SCI</span>
+                            <span class="ind" data-ind="Math" aria-label="Natural display">Math</span>
+                        </span>
+                    </div>
+                    <div class="display-expr" id="display-main" role="img" aria-label="Expression: empty">
+                        <span class="cursor" aria-hidden="true">|</span>
+                    </div>
+                    <div class="display-result" id="display-result" role="status" aria-live="polite" aria-atomic="true">0</div>
+                </div>
+            </div>
+
+            <!-- ============ CONTROL + SPLIT ROW AREA ============ -->
+            <!-- Flat grid: no wrapper divs. Every element placed explicitly. -->
+            <div class="control-zone">
+                <!-- Row 1 col 1: SHIFT + ALPHA pills -->
+                <div class="cz-pills-left">
+                    <div class="cz-pill-wrap">
+                        <span class="cz-label cz-label-shift" aria-hidden="true">SHIFT</span>
+                        <button class="pill pill-dark" data-id="shift" aria-label="Shift" title="Shift — selects the yellow function above each key"></button>
+                    </div>
+                    <div class="cz-pill-wrap">
+                        <span class="cz-label cz-label-alpha" aria-hidden="true">ALPHA</span>
+                        <button class="pill pill-dark" data-id="alpha" aria-label="Alpha" title="Alpha — selects the red variable above each key"></button>
+                    </div>
+                </div>
+
+                <!-- Row 1-3 col 2: Nav pad -->
+                <div class="cz-nav">
+                    <div class="nav-pad">
+                        <button class="nav-btn nav-up" data-id="up" aria-label="Up" title="Up — recall newer history / move up"><span aria-hidden="true">&#9650;</span></button>
+                        <button class="nav-btn nav-left" data-id="left" aria-label="Left" title="Left — move cursor left"><span aria-hidden="true">&#9664;</span></button>
+                        <div class="nav-center" aria-hidden="true"></div>
+                        <button class="nav-btn nav-right" data-id="right" aria-label="Right" title="Right — move cursor right"><span aria-hidden="true">&#9654;</span></button>
+                        <button class="nav-btn nav-down" data-id="down" aria-label="Down" title="Down — recall older history / move down"><span aria-hidden="true">&#9660;</span></button>
+                    </div>
+                </div>
+
+                <!-- Row 1 col 3: MODE + ON pills -->
+                <div class="cz-pills-right">
+                    <div class="cz-pill-wrap">
+                        <span class="cz-label cz-label-mode" aria-hidden="true">MODE <span class="setup-yellow">SETUP</span></span>
+                        <button class="pill pill-dark" data-id="mode" aria-label="Mode" title="Mode (SHIFT: Setup)"></button>
+                    </div>
+                    <div class="cz-pill-wrap">
+                        <span class="cz-label cz-label-on" aria-hidden="true">ON</span>
+                        <button class="pill pill-dark" data-id="on" aria-label="On" title="On / power on"></button>
+                    </div>
+                </div>
+
+                <!-- Row 2: spacers (the red ':' now prints as the ALPHA legend of ENG) -->
+                <div class="cz-colon" aria-hidden="true"></div>
+
+                <!-- Row 2 col 3: empty spacer -->
+                <div class="cz-colon-spacer" aria-hidden="true"></div>
+
+                <!-- Row 3 col 1: Abs, x³ -->
+                <div class="cz-btns-left">
+                    <button class="btn bf" data-id="abs" aria-label="Absolute value" title="Absolute value">
+                        <span class="bl" aria-hidden="true">Abs</span>
+                    </button>
+                    <button class="btn bf" data-id="cube" aria-label="x cubed" title="x cubed">
+                        <span class="bl" aria-hidden="true"><i>x</i><sup>3</sup></span>
+                    </button>
+                </div>
+
+                <!-- Row 3 col 3: x⁻¹, x! -->
+                <div class="cz-btns-right">
+                    <button class="btn bf" data-id="reciprocal" aria-label="Reciprocal" title="Reciprocal (x to the minus one)">
+                        <span class="bl" aria-hidden="true"><i>x</i><sup>&minus;1</sup></span>
+                    </button>
+                    <button class="btn bf" data-id="factorial" aria-label="Factorial" title="Factorial (x!)">
+                        <span class="bl" aria-hidden="true"><i>x</i>!</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ============ FUNCTION ROWS (6 per row × 3 rows) ============ -->
+            <div class="func-area">
+                <!-- Row F2: fraction, √, x², xⁿ, log, ln -->
+                <div class="func-row">
+                    <button class="btn bf" data-id="fraction" aria-label="Fraction" title="Fraction (SHIFT: mixed number)">
+                        <span class="sl" aria-hidden="true"><sup>&#x25A0;</sup>&#x2044;<sub>&#x25A0;</sub></span>
+                        <span class="bl frac-icon" aria-hidden="true"><span class="frac-top">&#x25A0;</span><span class="frac-bar"></span><span class="frac-bot">&#x25A0;</span></span>
+                    </button>
+                    <button class="btn bf" data-id="sqrt" aria-label="Square root" title="Square root (SHIFT: cube root)">
+                        <span class="sl" aria-hidden="true"><sup>3</sup>&#x221A;&#x25A0;</span>
+                        <span class="bl" aria-hidden="true">&#x221A;<span class="vinculum">&#x25A0;</span></span>
+                    </button>
+                    <button class="btn bf" data-id="square" aria-label="x squared" title="x squared">
+                        <span class="sl" aria-hidden="true"></span>
+                        <span class="bl" aria-hidden="true"><i>x</i><sup>2</sup></span>
+                    </button>
+                    <button class="btn bf" data-id="power" aria-label="Power" title="x to the power (SHIFT: x-th root)">
+                        <span class="sl" aria-hidden="true"></span>
+                        <span class="bl" aria-hidden="true"><i>x</i><sup>&#x25A0;</sup></span>
+                    </button>
+                    <button class="btn bf" data-id="log" aria-label="log" title="Log base 10 (SHIFT: 10 to the x)">
+                        <span class="sl" aria-hidden="true">10<sup><i>x</i></sup></span>
+                        <span class="bl" aria-hidden="true">log</span>
+                    </button>
+                    <button class="btn bf" data-id="ln" aria-label="Natural log" title="Natural log (SHIFT: e to the x)">
+                        <span class="sl" aria-hidden="true"><i>e</i><sup><i>x</i></sup></span>
+                        <span class="bl" aria-hidden="true">ln</span>
+                    </button>
+                </div>
+                <!-- Row F3: (−), °‚‚‚, hyp, sin, cos, tan -->
+                <div class="func-row">
+                    <button class="btn bf" data-id="negate" aria-label="Negative sign" title="Negative sign (ALPHA: A)">
+                        <span class="al" aria-hidden="true">A</span>
+                        <span class="bl" aria-hidden="true">(&ndash;)</span>
+                    </button>
+                    <button class="btn bf" data-id="dms" aria-label="Degrees minutes seconds" title="Degrees/minutes/seconds (SHIFT: FACT, ALPHA: B)">
+                        <span class="sl" aria-hidden="true">FACT</span>
+                        <span class="al" aria-hidden="true">B</span>
+                        <span class="bl dms-label" aria-hidden="true">&#x25CB;<span class="dms-marks">&#x2C8;&#x2C8;&#x2C8;</span></span>
+                    </button>
+                    <button class="btn bf" data-id="hyp" aria-label="Hyperbolic functions" title="Hyperbolic functions (ALPHA: C)">
+                        <span class="al" aria-hidden="true">C</span>
+                        <span class="bl" aria-hidden="true">hyp</span>
+                    </button>
+                    <button class="btn bf" data-id="sin" aria-label="Sine" title="Sine (SHIFT: inverse sine, ALPHA: D)">
+                        <span class="sl" aria-hidden="true">sin<sup>&minus;1</sup></span>
+                        <span class="al" aria-hidden="true">D</span>
+                        <span class="bl" aria-hidden="true">sin</span>
+                    </button>
+                    <button class="btn bf" data-id="cos" aria-label="Cosine" title="Cosine (SHIFT: inverse cosine, ALPHA: E)">
+                        <span class="sl" aria-hidden="true">cos<sup>&minus;1</sup></span>
+                        <span class="al" aria-hidden="true">E</span>
+                        <span class="bl" aria-hidden="true">cos</span>
+                    </button>
+                    <button class="btn bf" data-id="tan" aria-label="Tangent" title="Tangent (SHIFT: inverse tangent, ALPHA: F)">
+                        <span class="sl" aria-hidden="true">tan<sup>&minus;1</sup></span>
+                        <span class="al" aria-hidden="true">F</span>
+                        <span class="bl" aria-hidden="true">tan</span>
+                    </button>
+                </div>
+                <!-- Row F4: RCL, ENG, (, ), S⇔D, M+ -->
+                <div class="func-row">
+                    <button class="btn bf" data-id="rcl" aria-label="Recall" title="Recall memory (SHIFT: Store)">
+                        <span class="sl" aria-hidden="true">STO</span>
+                        <span class="bl" aria-hidden="true">RCL</span>
+                    </button>
+                    <button class="btn bf" data-id="eng" aria-label="Engineering notation" title="Engineering notation (SHIFT: reverse ENG, ALPHA: colon / multi-statement)">
+                        <span class="sl" aria-hidden="true">&larr;</span>
+                        <span class="al" aria-hidden="true">:</span>
+                        <span class="bl" aria-hidden="true">ENG</span>
+                    </button>
+                    <button class="btn bf" data-id="lparen" aria-label="Open parenthesis" title="Open parenthesis (SHIFT: percent)">
+                        <span class="sl" aria-hidden="true">%</span>
+                        <span class="bl" aria-hidden="true">(</span>
+                    </button>
+                    <button class="btn bf" data-id="rparen" aria-label="Close parenthesis" title="Close parenthesis (SHIFT: comma, ALPHA: X)">
+                        <span class="sl" aria-hidden="true">,</span>
+                        <span class="al" aria-hidden="true">X</span>
+                        <span class="bl" aria-hidden="true">)</span>
+                    </button>
+                    <button class="btn bf" data-id="sd" aria-label="Standard to decimal toggle" title="S to D — exact/decimal toggle (SHIFT: mixed/improper fraction, ALPHA: Y)">
+                        <span class="sl" aria-hidden="true">a<sup>b</sup>/<sub>c</sub>&#x21D4;<sup>d</sup>/<sub>c</sub></span>
+                        <span class="al" aria-hidden="true">Y</span>
+                        <span class="bl" aria-hidden="true">S&#x21D4;D</span>
+                    </button>
+                    <button class="btn bf" data-id="mplus" aria-label="Add to memory" title="Add to memory M (SHIFT: subtract from M, ALPHA: M)">
+                        <span class="sl" aria-hidden="true">M&minus;</span>
+                        <span class="al" aria-hidden="true">M</span>
+                        <span class="bl" aria-hidden="true">M+</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ============ NUMBER GRID (5 per row × 4 rows) ============ -->
+            <div class="num-grid">
+                <!-- Row N1: 7, 8, 9, DEL, AC -->
+                <button class="btn bn" data-id="7" aria-label="7" title="7">
+                    <span class="bl" aria-hidden="true">7</span>
+                </button>
+                <button class="btn bn" data-id="8" aria-label="8" title="8">
+                    <span class="bl" aria-hidden="true">8</span>
+                </button>
+                <button class="btn bn" data-id="9" aria-label="9" title="9 (SHIFT: CLR)">
+                    <span class="sl" aria-hidden="true">CLR</span>
+                    <span class="bl" aria-hidden="true">9</span>
+                </button>
+                <button class="btn bn bn-del" data-id="del" aria-label="Delete" title="Delete (SHIFT: Insert)">
+                    <span class="sl" aria-hidden="true">INS</span>
+                    <span class="bl" aria-hidden="true">DEL</span>
+                </button>
+                <button class="btn bn bn-ac" data-id="ac" aria-label="All clear" title="All clear (SHIFT: Off)">
+                    <span class="sl" aria-hidden="true">OFF</span>
+                    <span class="bl" aria-hidden="true">AC</span>
+                </button>
+
+                <!-- Row N2: 4, 5, 6, ×, ÷ -->
+                <button class="btn bn" data-id="4" aria-label="4" title="4">
+                    <span class="bl" aria-hidden="true">4</span>
+                </button>
+                <button class="btn bn" data-id="5" aria-label="5" title="5">
+                    <span class="bl" aria-hidden="true">5</span>
+                </button>
+                <button class="btn bn" data-id="6" aria-label="6" title="6 (SHIFT: relational operators / VERIFY)">
+                    <span class="bl" aria-hidden="true">6</span>
+                    <span class="sbl" aria-hidden="true">VERIFY</span>
+                </button>
+                <button class="btn bn bn-op" data-id="multiply" aria-label="Multiply" title="Multiply (SHIFT: nPr, ALPHA: GCD)">
+                    <span class="sl" aria-hidden="true">nPr</span>
+                    <span class="al" aria-hidden="true">GCD</span>
+                    <span class="bl" aria-hidden="true">&times;</span>
+                </button>
+                <button class="btn bn bn-op" data-id="divide" aria-label="Divide" title="Divide (SHIFT: nCr, ALPHA: LCM)">
+                    <span class="sl" aria-hidden="true">nCr</span>
+                    <span class="al" aria-hidden="true">LCM</span>
+                    <span class="bl" aria-hidden="true">&divide;</span>
+                </button>
+
+                <!-- Row N3: 1, 2, 3, +, − -->
+                <button class="btn bn" data-id="1" aria-label="1" title="1 (SHIFT: STAT)">
+                    <span class="sl" aria-hidden="true">STAT</span>
+                    <span class="bl" aria-hidden="true">1</span>
+                </button>
+                <button class="btn bn" data-id="2" aria-label="2" title="2">
+                    <span class="bl" aria-hidden="true">2</span>
+                </button>
+                <button class="btn bn" data-id="3" aria-label="3" title="3">
+                    <span class="bl" aria-hidden="true">3</span>
+                </button>
+                <button class="btn bn bn-op" data-id="add" aria-label="Plus" title="Plus (SHIFT: Pol)">
+                    <span class="sl" aria-hidden="true">Pol</span>
+                    <span class="bl" aria-hidden="true">+</span>
+                </button>
+                <button class="btn bn bn-op" data-id="subtract" aria-label="Minus" title="Minus (SHIFT: Rec)">
+                    <span class="sl" aria-hidden="true">Rec</span>
+                    <span class="bl" aria-hidden="true">&minus;</span>
+                </button>
+
+                <!-- Row N4: 0, ., ×10ˣ, Ans, = -->
+                <button class="btn bn" data-id="0" aria-label="0" title="0 (SHIFT: Rnd)">
+                    <span class="sl" aria-hidden="true">Rnd</span>
+                    <span class="bl" aria-hidden="true">0</span>
+                </button>
+                <button class="btn bn" data-id="dot" aria-label="Decimal point" title="Decimal point (SHIFT: Ran#, ALPHA: RanInt#)">
+                    <span class="sl" aria-hidden="true">Ran#</span>
+                    <!-- ALPHA RanInt# is wired in keymap.js but its faceplate position is
+                         unverified and won't fit above the "." key; legend deferred to the
+                         Phase 13 hardware sign-off (see docs/QA-PROTOCOL.md). -->
+                    <span class="bl" aria-hidden="true">&middot;</span>
+                </button>
+                <button class="btn bn" data-id="exp" aria-label="Times ten to the power" title="×10 to the power (SHIFT: pi, ALPHA: e)">
+                    <span class="sl" aria-hidden="true">&pi;</span>
+                    <span class="al" aria-hidden="true"><i>e</i></span>
+                    <span class="bl" aria-hidden="true">&times;10<sup>x</sup></span>
+                </button>
+                <button class="btn bn bn-ans" data-id="ans" aria-label="Answer" title="Ans — last result (SHIFT: DRG conversion)">
+                    <span class="sl" aria-hidden="true">DRG&#x25B6;</span>
+                    <span class="bl" aria-hidden="true">Ans</span>
+                </button>
+                <button class="btn bn bn-eq" data-id="equals" aria-label="Equals" title="Equals — evaluate">
+                    <span class="bl" aria-hidden="true">=</span>
+                </button>
+            </div>
+
+        </div><!-- /calc-body -->
+    </div><!-- /calculator -->
+
+    <!-- Minimized dock -->
+    <div class="minimized-dock" id="minimized-dock" style="display:none;">
+        <button class="dock-btn" id="btn-restore" aria-label="Restore PLEXEN calculator"><span aria-hidden="true">PLE<span class="gold-x">X</span>EN</span></button>
+    </div>
+
+    <!-- Calculator engine + UI (ES modules; needs a server, not file://) -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

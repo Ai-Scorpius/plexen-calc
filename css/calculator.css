@@ -1,0 +1,860 @@
+/* ==========================================================
+   PLEXEN Scientific — Precision CSS
+   Reference:  Scientific web edition
+   Real dimensions: 162mm × 77mm (ratio 2.104:1)
+   Web scale: 308px wide (4× real mm scale)
+   Height: 648px (4× 162mm)
+   All measurements derived from reference photo proportions.
+   ========================================================== */
+
+/* ==========================================================
+   SELF-HOSTED FONT (decision D0.8, resolved Phase 14)
+   The faceplate's italic math glyphs (x, e, b, c, d) render in Noto Serif
+   Italic — previously pulled from Google Fonts, which made the app depend
+   on an external host (breaks offline-first + a strict CSP). Now shipped
+   locally: SIL OFL 1.1, freely redistributable (see assets/fonts/OFL.txt).
+   Only the `latin` subset is shipped (15 KB) — it covers every glyph used.
+   'Cambria Math' stays in the stacks as a LOCAL-only fallback: it is
+   Microsoft-proprietary, so it is never shipped, only used if installed.
+   STIX Two Math was requested from Google Fonts but referenced by no rule;
+   dropped entirely.
+   ========================================================== */
+@font-face {
+    font-family: 'Noto Serif';
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../assets/fonts/noto-serif-italic-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+        U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122,
+        U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Reset */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: transparent;
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow: auto;
+}
+
+/* ==========================================================
+   CALCULATOR SHELL
+   ========================================================== */
+.calculator {
+    width: 308px;
+    position: absolute;
+    user-select: none;
+    z-index: 9999;
+    cursor: default;
+}
+
+.calc-body {
+    width: 308px;
+    height: 648px;
+    background: linear-gradient(170deg, #2c2c30 0%, #222226 30%, #1c1c1f 100%);
+    border-radius: 16px;
+    padding: 0;
+    box-shadow:
+        0 10px 40px rgba(0,0,0,0.7),
+        0 0 0 1px rgba(50,50,55,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.03);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ==========================================================
+   TITLE BAR (floating window chrome — not part of real calc)
+   ========================================================== */
+.title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, #28282c, #1c1c1f);
+    padding: 4px 10px;
+    border-radius: 8px 8px 0 0;
+    cursor: grab;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    flex-shrink: 0;
+}
+.title-bar:active { cursor: grabbing; }
+.title-bar-text { font-size: 10px; font-weight: 600; color: #a8a8a8; letter-spacing: 0.5px; }
+.title-bar-controls { display: flex; gap: 5px; }
+.title-btn {
+    width: 14px; height: 14px; border: none; border-radius: 50%;
+    font-size: 11px; line-height: 13px; text-align: center;
+    cursor: pointer; color: #fff; padding: 0;
+}
+.title-btn-minimize { background: #d4a017; }
+.title-btn-minimize:hover { background: #e0b020; }
+.title-btn-close { background: #d04040; }
+.title-btn-close:hover { background: #e05050; }
+
+/* Gold X */
+.gold-x { color: #d4a017; text-shadow: 0 0 5px rgba(212,160,23,0.3); }
+
+/* Minimized dock */
+.minimized-dock {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10001;
+}
+.dock-btn {
+    background: linear-gradient(180deg, #2a2a2e, #1c1c1f);
+    color: #bbb; border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px; padding: 8px 16px; font-size: 12px;
+    font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.dock-btn:hover { background: #333; }
+
+/* ==========================================================
+   BRANDING
+   Real: "" bold top-left, "Scientific" top-right
+   ========================================================== */
+.brand-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 14px 16px 0;
+}
+.brand-name {
+    font-family: 'Arial Black', sans-serif;
+    font-weight: 900;
+    font-size: 16px;
+    color: #fff;
+    letter-spacing: 2px;
+}
+.brand-model {
+    font-size: 9px;
+    color: #999;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.brand-tagline {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 4px 16px 4px;
+}
+.tagline-text {
+    font-size: 8px;
+    font-weight: 800;
+    font-style: italic;
+    color: #999;
+    letter-spacing: 0.5px;
+}
+.tagline-edition {
+    font-size: 7px;
+    color: #777;
+    font-weight: 600;
+}
+
+/* ==========================================================
+   DISPLAY
+   Real: ~55mm × 22mm green LCD, dark bezel, rounded corners
+   Web: 276px × 92px (bezel adds ~8px)
+   ========================================================== */
+.display-bezel {
+    background: #111114;
+    border-radius: 8px;
+    margin: 0 14px 0;
+    padding: 5px;
+    box-shadow:
+        inset 0 2px 6px rgba(0,0,0,0.6),
+        0 1px 0 rgba(255,255,255,0.02);
+}
+.display {
+    background: linear-gradient(180deg, #cddcae, #c4d5a2);
+    border-radius: 4px;
+    padding: 4px 6px 4px;
+    height: 88px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Status indicators */
+.display-status {
+    display: flex;
+    gap: 3px;
+    font-size: 6.5px;
+    height: 10px;
+    line-height: 10px;
+    padding-bottom: 1px;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    margin-bottom: 1px;
+}
+/* State is conveyed by presence (visibility), not color alone (WCAG 1.4.1):
+   inactive indicators are hidden — which also drops them from the a11y tree —
+   and the ink colour stays constant so an active flag never reads as a colour
+   change a low-vision user could miss. */
+.ind { visibility: hidden; color: #2a3a1a; font-weight: 700; font-family: 'Consolas', monospace; }
+.ind.active { visibility: visible; }
+.ind-right { margin-left: auto; display: flex; gap: 3px; }
+
+/* Expression area */
+.display-expr {
+    flex: 1;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 16px;
+    color: #1a2a0a;
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+.display-expr::-webkit-scrollbar { display: none; }
+.display-expr { -ms-overflow-style: none; scrollbar-width: none; }
+
+.cursor {
+    display: inline-block; width: 2px; height: 17px;
+    background: #1a2a0a; animation: blink 1s step-end infinite;
+}
+/* Low-space warning: filled block cursor near the 99-byte input limit */
+.cursor-low { width: 9px; }
+
+/* ==========================================================
+   NATURAL TEXTBOOK DISPLAY (MthIO) — expression boxes
+   ========================================================== */
+.etok { white-space: pre; }
+
+/* Stacked fraction */
+.efrac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+    vertical-align: middle;
+    text-align: center;
+    margin: 0 1px;
+    font-size: 0.86em;
+}
+.efrac .enum, .efrac .eden { padding: 0 3px; line-height: 1.05; }
+.efrac .ebar { height: 1px; background: #1a2a0a; margin: 1px 0; }
+
+/* Raised exponent box */
+sup.epow {
+    font-size: 0.62em;
+    vertical-align: super;
+    line-height: 0;
+}
+
+/* Empty placeholder slot */
+.eph {
+    display: inline-block;
+    color: rgba(26,42,10,0.45);
+    padding: 0 1px;
+}
+
+/* Result line: stacked fraction + √ vinculum */
+.display-result .efrac { font-size: 0.7em; }
+.display-result .efrac .ebar { background: #1a2a0a; }
+.rroot { white-space: nowrap; }
+.rroot .rrad {
+    border-top: 1px solid #1a2a0a;
+    padding: 0 1px;
+    margin-left: -1px;
+}
+
+/* The two-line display grows a little to fit stacked content */
+.display-expr { align-items: center; }
+
+/* ==========================================================
+   STAT DATA EDITOR (grid over the LCD)
+   ========================================================== */
+.stat-grid {
+    display: flex;
+    flex-direction: column;
+    font-size: 11px;
+    line-height: 1.25;
+    width: 100%;
+}
+.stat-row { display: flex; gap: 2px; }
+.stat-header .stat-cell { font-weight: 700; text-align: center; }
+.stat-rn { width: 14px; color: rgba(26,42,10,0.6); text-align: right; flex-shrink: 0; }
+.stat-cell {
+    flex: 1;
+    min-width: 0;
+    text-align: right;
+    padding: 0 3px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.stat-active {
+    background: #1a2a0a;
+    color: #cddcae;
+    border-radius: 2px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* Result line */
+.display-result {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 18px; font-weight: 700; color: #1a2a0a;
+    text-align: right; min-height: 20px; line-height: 20px;
+    border-top: 1px solid rgba(0,0,0,0.04); padding-top: 2px;
+}
+
+/* ==========================================================
+   CONTROL ZONE
+   Combined area: pills + nav pad + split buttons (Abs, x³, x⁻¹, log□)
+   The nav pad is a large circular disc spanning the full height.
+   Left: SHIFT/ALPHA pills (top) + Abs/x³ buttons (bottom)
+   Center: nav pad
+   Right: MODE/ON pills (top) + x⁻¹/log□ buttons (bottom)
+   ========================================================== */
+/* Explicit 3×3 grid — every element in a named cell */
+.control-zone {
+    display: grid;
+    grid-template-columns: 90px 1fr 90px;
+    grid-template-rows: auto auto auto;
+    padding: 10px 14px 0;
+    column-gap: 6px;
+}
+
+/* Row 1: pill groups */
+.cz-pills-left  { grid-column: 1; grid-row: 1; }
+.cz-nav          { grid-column: 2; grid-row: 1 / 4; display: flex; align-items: center; justify-content: center; }
+.cz-pills-right  { grid-column: 3; grid-row: 1; }
+
+/* Row 2: colon / spacer */
+.cz-colon        { grid-column: 1; grid-row: 2; }
+.cz-colon-spacer { grid-column: 3; grid-row: 2; }
+
+/* Row 3: button groups */
+.cz-btns-left    { grid-column: 1; grid-row: 3; }
+.cz-btns-right   { grid-column: 3; grid-row: 3; }
+
+/* Pill groups */
+.cz-pills-left, .cz-pills-right {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: flex-end;
+}
+.cz-pill-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+/* Labels */
+.cz-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: #ccc;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    text-align: center;
+}
+.cz-label-shift { color: #d4a017; }
+.cz-label-alpha { color: #e86a6a; } /* lifted from the old dim red for ≥4.5:1 on dark */
+.cz-label-mode { color: #ccc; font-size: 7px; }
+.cz-label-mode .setup-yellow { color: #d4a017; }
+.cz-label-on { color: #ccc; }
+
+/* Red colon */
+.cz-colon {
+    font-size: 10px;
+    font-weight: 700;
+    color: #cc5566;
+    text-align: right;
+    padding-right: 18px;
+    line-height: 14px;
+    height: 14px;
+}
+/* Invisible spacer — same height */
+.cz-colon-spacer {
+    height: 14px;
+}
+
+/* Button groups (Abs/x³ and x⁻¹/x!) */
+.cz-btns-left, .cz-btns-right {
+    display: flex;
+    gap: 4px;
+}
+.cz-btns-left .bf, .cz-btns-right .bf {
+    flex: 1;
+    height: 28px;
+}
+.cz-btns-left .bl, .cz-btns-right .bl {
+    font-size: 15px;
+    font-weight: 600;
+}
+.cz-btns-left .bl sup, .cz-btns-right .bl sup {
+    font-size: 9px;
+    vertical-align: super;
+    line-height: 0;
+}
+.cz-btns-left .bl sub, .cz-btns-right .bl sub {
+    font-size: 9px;
+    vertical-align: sub;
+    line-height: 0;
+}
+.cz-btns-left .bl i, .cz-btns-right .bl i {
+    font-family: 'Noto Serif', 'Cambria Math', 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 400;
+}
+
+/* Pill buttons — metallic convex dome with concentric brushed metal look */
+.pill {
+    border: none;
+    cursor: pointer;
+    transition: all 0.06s;
+}
+.pill:hover { filter: brightness(1.15); }
+.pill:active { transform: translateY(1px); filter: brightness(0.85); }
+
+.pill-dark {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background:
+        radial-gradient(ellipse at 50% 35%, rgba(140,140,150,0.45) 0%, transparent 50%),
+        radial-gradient(circle, #3e3e44 0%, #2e2e32 40%, #1e1e22 100%);
+    box-shadow:
+        0 3px 6px rgba(0,0,0,0.6),
+        0 1px 2px rgba(0,0,0,0.4),
+        inset 0 1px 2px rgba(255,255,255,0.18),
+        inset 0 -1px 2px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+}
+.pill-dark::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: repeating-radial-gradient(
+        circle at 50% 50%,
+        rgba(255,255,255,0.07) 0px,
+        transparent 1px,
+        transparent 2.5px,
+        rgba(255,255,255,0.04) 3.5px
+    );
+    pointer-events: none;
+}
+
+/* Center column: Nav pad */
+.cz-center {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Nav pad — large circular disc with textured surface + 4 metallic directional lobes */
+.nav-pad {
+    width: 92px;
+    height: 82px;
+    border-radius: 50%;
+    position: relative;
+    /* Honeycomb/hexagonal textured background */
+    background:
+        radial-gradient(circle, #2c2c30 0%, #242428 45%, #1c1c20 100%);
+    box-shadow:
+        0 4px 8px rgba(0,0,0,0.6),
+        0 1px 3px rgba(0,0,0,0.4),
+        inset 0 2px 6px rgba(0,0,0,0.4),
+        inset 0 -1px 2px rgba(255,255,255,0.03);
+    display: grid;
+    grid-template-areas:
+        ".    up    ."
+        "left ctr right"
+        ".    down  .";
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 0.6fr 1fr;
+    padding: 6px;
+}
+
+/* Hexagonal/crosshatch texture overlay */
+.nav-pad::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background-image:
+        linear-gradient(30deg, rgba(255,255,255,0.02) 25%, transparent 25%),
+        linear-gradient(150deg, rgba(255,255,255,0.02) 25%, transparent 25%),
+        linear-gradient(210deg, rgba(255,255,255,0.02) 25%, transparent 25%),
+        linear-gradient(330deg, rgba(255,255,255,0.02) 25%, transparent 25%);
+    background-size: 6px 10px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Directional lobe buttons — metallic brushed finish */
+.nav-btn {
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 1;
+    position: relative;
+    color: #888;
+    font-size: 7px;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    justify-self: center;
+    align-self: center;
+    background:
+        radial-gradient(ellipse at 50% 40%, rgba(100,100,110,0.4) 0%, transparent 60%),
+        radial-gradient(circle, #38383c 0%, #2a2a2e 50%, #222226 100%);
+    box-shadow:
+        0 2px 4px rgba(0,0,0,0.5),
+        inset 0 1px 2px rgba(255,255,255,0.12),
+        inset 0 -1px 1px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+/* Concentric ring texture on lobes */
+.nav-btn::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    background: repeating-radial-gradient(
+        circle at 50% 50%,
+        rgba(255,255,255,0.05) 0px,
+        transparent 1px,
+        transparent 2px,
+        rgba(255,255,255,0.03) 3px
+    );
+    pointer-events: none;
+}
+.nav-btn:hover { filter: brightness(1.2); }
+.nav-btn:active { transform: scale(0.95); filter: brightness(0.85); }
+
+.nav-up { grid-area: up; }
+.nav-down { grid-area: down; }
+.nav-left { grid-area: left; }
+.nav-right { grid-area: right; }
+.nav-center {
+    grid-area: ctr;
+    width: 18px;
+    height: 18px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 50%;
+    z-index: 1;
+    justify-self: center;
+    align-self: center;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    color: transparent;
+}
+
+/* ==========================================================
+   FUNCTION BUTTONS AREA
+   Real: rows of 6 dark buttons, ~8mm × 6.5mm, ~1.5mm gap
+   Web: 6 columns, button ~42px × 26px, gap 4px
+   ========================================================== */
+.func-area {
+    padding: 0 14px;
+}
+.func-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 4px;
+    margin-top: 3px;
+    padding-top: 12px; /* room for shift/alpha labels */
+}
+
+
+/* Interactive elements: no 300ms tap delay / double-tap zoom on mobile */
+.btn, .pill, .nav-btn, .title-btn, .dock-btn {
+    touch-action: manipulation;
+}
+
+/* ==========================================================
+   TOUCH TARGETS (WCAG 2.5.8) + COPYABILITY
+   Small controls get a transparent ::before that enlarges the tap
+   area without changing the painted key. The label spans above/below a
+   key are pointer-events:none, so expanding up/down is safe; horizontal
+   growth is kept under the inter-key gap so targets never overlap.
+   ========================================================== */
+.title-btn { position: relative; }
+.title-bar-controls { gap: 10px; } /* was 5px — 24px targets can't both be hit at 5px */
+.title-btn::before {
+    content: '';
+    position: absolute;
+    inset: -5px;            /* 14px dot → 24px effective target */
+}
+/* Function keys: grow into the (empty) legend gap above/below, barely sideways */
+.bf::before {
+    content: '';
+    position: absolute;
+    inset: -6px -1px;
+}
+/* The result is selectable text so it can be copied (overrides calc-wide
+   user-select:none); Ctrl+C with no selection copies it too (see main.js). */
+.display-result { user-select: text; -webkit-user-select: text; cursor: text; }
+
+/* ==========================================================
+   COARSE-POINTER (touch) SCALE-UP
+   Phones get a larger calculator. Scaling .calculator lifts the title
+   bar and body together; transform-origin top-centre keeps it anchored
+   so 1.12 × 308 ≈ 345px still fits a 358px+ viewport (below that the
+   100vw rule takes over). chrome.js disables dragging when coarse.
+   ========================================================== */
+@media (pointer: coarse) {
+    .title-bar { cursor: default; } /* not draggable on touch */
+}
+@media (pointer: coarse) and (min-width: 358px) {
+    .calculator { transform: scale(1.12); transform-origin: top center; }
+}
+
+/* Common button base */
+.btn {
+    position: relative;
+    border: none;
+    cursor: pointer;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.06s;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.btn:hover { filter: brightness(1.12); }
+.btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    filter: brightness(0.9);
+}
+
+/* Function button */
+.bf {
+    background: linear-gradient(180deg, #333338 0%, #28282c 100%);
+    height: 28px;
+    border-radius: 5px;
+}
+
+/* Button label (primary text on button face) */
+.bl {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e0e0e4;
+    line-height: 1;
+}
+/* Italic x/e in function buttons — curvy math serif */
+.bl i, .bl sup, .bl sub {
+    font-family: 'Noto Serif', 'Cambria Math', 'Times New Roman', serif;
+}
+.bl i {
+    font-style: italic;
+    font-weight: 400;
+}
+.bl sup {
+    font-size: 0.6em;
+    vertical-align: super;
+    line-height: 0;
+}
+.bl sub {
+    font-size: 0.6em;
+    vertical-align: sub;
+    line-height: 0;
+}
+
+/* Fraction icon on button face */
+.frac-icon {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0px;
+    font-size: 5px;
+    line-height: 1;
+    vertical-align: middle;
+}
+.frac-top, .frac-bot {
+    font-size: 5px;
+    line-height: 1;
+    color: #e0e0e4;
+}
+.frac-bar {
+    width: 12px;
+    height: 1px;
+    background: #e0e0e4;
+}
+
+/* DMS button: small o then three 9-shaped comma marks */
+.dms-label {
+    font-size: 14px;
+    letter-spacing: -0.5px;
+}
+.dms-marks {
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+/* Square root with vinculum bar */
+.vinculum {
+    font-size: 5px;
+    text-decoration: overline;
+    text-decoration-color: #e0e0e4;
+    color: #e0e0e4;
+    margin-left: -1px;
+}
+
+/* Shift label (yellow, above button) */
+.sl {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 7.5px;
+    font-weight: 700;
+    color: #d4a017;
+    white-space: nowrap;
+    pointer-events: none;
+}
+.sl i {
+    font-family: 'Noto Serif', 'Cambria Math', 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 400;
+}
+.sl sup {
+    font-size: 0.7em;
+    vertical-align: super;
+}
+
+/* Alpha label (red, above button right side) */
+.al {
+    position: absolute;
+    top: -12px;
+    right: 2px;
+    font-size: 7.5px;
+    font-weight: 700;
+    color: #e86a6a; /* lifted from the old dim red for ≥4.5:1 on the dark button face */
+    pointer-events: none;
+}
+
+/* ==========================================================
+   NUMBER GRID
+   Real: 5 columns, ~12mm × 10mm buttons, ~2mm gap
+   Web: grid 5 cols, button height 42px, gap 5px
+   ========================================================== */
+.num-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    column-gap: 5px;
+    row-gap: 18px;
+    padding: 14px 14px 0;
+    margin-top: 2px;
+}
+.num-grid .btn {
+    padding: 0;
+}
+
+/* Number button */
+.bn {
+    background: linear-gradient(180deg, #3c3c44 0%, #30303a 100%);
+    height: 42px;
+    border-radius: 6px;
+    position: relative;
+}
+.bn .bl {
+    font-size: 22px;
+    font-weight: 800;
+    color: #eee;
+}
+
+/* Below-button shift label (yellow, sits below the button) */
+.sbl {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 6.5px;
+    font-weight: 700;
+    color: #d4a017;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* Operator buttons (×, ÷, +, −) — slightly different shade */
+.bn-op {
+    background: linear-gradient(180deg, #363640 0%, #2c2c36 100%);
+}
+.bn-op .bl {
+    font-size: 20px;
+}
+
+/* DEL button — muted green matching  */
+.bn-del {
+    background: linear-gradient(180deg, #4a9a4a 0%, #3b7f3b 100%);
+}
+.bn-del .bl {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* AC button — muted green matching  */
+.bn-ac {
+    background: linear-gradient(180deg, #4a9a4a 0%, #3b7f3b 100%);
+}
+.bn-ac .bl {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* Ans button */
+.bn-ans {
+    background: linear-gradient(180deg, #3c3c44 0%, #30303a 100%);
+}
+.bn-ans .bl {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* Equals button */
+.bn-eq {
+    background: linear-gradient(180deg, #3c3c44 0%, #30303a 100%);
+}
+.bn-eq .bl {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* ×10^x — smaller text */
+.bn[data-id="exp"] .bl {
+    font-size: 11px;
+}
+
+/* dot — bigger */
+.bn[data-id="dot"] .bl {
+    font-size: 24px;
+    line-height: 0.5;
+}
+
+/* Shift labels on number buttons */
+.num-grid .sl {
+    top: -12px;
+}
+
+/* ==========================================================
+   BOTTOM PADDING
+   ========================================================== */
+.calc-body::after {
+    content: '';
+    display: block;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+@media (max-width: 340px) {
+    .calculator { width: 100vw; }
+    .calc-body { width: 100vw; border-radius: 0; }
+}
