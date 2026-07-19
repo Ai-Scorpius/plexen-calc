@@ -14,7 +14,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192" type="image/png">
     <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
-    <link rel="stylesheet" href="css/calculator.css?v=8">
+    <link rel="stylesheet" href="css/calculator.css?v=9">
 </head>
 <body>
     <div class="calculator" id="calculator">
@@ -116,7 +116,8 @@
                     <button class="btn bf" data-id="abs" aria-label="Absolute value" title="Absolute value">
                         <span class="bl" aria-hidden="true">Abs</span>
                     </button>
-                    <button class="btn bf" data-id="cube" aria-label="x cubed" title="x cubed">
+                    <button class="btn bf" data-id="cube" aria-label="x cubed" title="x cubed (ALPHA: colon / multi-statement)">
+                        <span class="al" aria-hidden="true">:</span>
                         <span class="bl" aria-hidden="true"><i>x</i><sup>3</sup></span>
                     </button>
                 </div>
@@ -137,7 +138,7 @@
                 <!-- Row F2: fraction, √, x², xⁿ, log, ln -->
                 <div class="func-row">
                     <button class="btn bf" data-id="fraction" aria-label="Fraction" title="Fraction (SHIFT: mixed number)">
-                        <span class="sl" aria-hidden="true"><sup>&#x25A0;</sup>&#x2044;<sub>&#x25A0;</sub></span>
+                        <span class="sl" aria-hidden="true">&#x25A0;<sup>&#x25A1;</sup>&#x2044;<sub>&#x25A1;</sub></span>
                         <span class="bl frac-icon" aria-hidden="true"><span class="frac-top">&#x25A0;</span><span class="frac-bar"></span><span class="frac-bot">&#x25A0;</span></span>
                     </button>
                     <button class="btn bf" data-id="sqrt" aria-label="Square root" title="Square root (SHIFT: cube root)">
@@ -153,11 +154,11 @@
                         <span class="bl" aria-hidden="true"><i>x</i><sup>&#x25A0;</sup></span>
                     </button>
                     <button class="btn bf" data-id="log" aria-label="log" title="Log base 10 (SHIFT: 10 to the x)">
-                        <span class="sl" aria-hidden="true">10<sup><i>x</i></sup></span>
+                        <span class="sl" aria-hidden="true">10<sup>&#x25A0;</sup></span>
                         <span class="bl" aria-hidden="true">log</span>
                     </button>
                     <button class="btn bf" data-id="ln" aria-label="Natural log" title="Natural log (SHIFT: e to the x)">
-                        <span class="sl" aria-hidden="true"><i>e</i><sup><i>x</i></sup></span>
+                        <span class="sl" aria-hidden="true"><i>e</i><sup>&#x25A0;</sup></span>
                         <span class="bl" aria-hidden="true">ln</span>
                     </button>
                 </div>
@@ -170,7 +171,7 @@
                     <button class="btn bf" data-id="dms" aria-label="Degrees minutes seconds" title="Degrees/minutes/seconds (SHIFT: FACT, ALPHA: B)">
                         <span class="sl" aria-hidden="true">FACT</span>
                         <span class="al" aria-hidden="true">B</span>
-                        <span class="bl dms-label" aria-hidden="true">&#x25CB;<span class="dms-marks">&#x2C8;&#x2C8;&#x2C8;</span></span>
+                        <span class="bl dms-label" aria-hidden="true"><sup class="dms-deg">&#x25CB;</sup><span class="dms-marks">&#x201A;&#x201A;&#x201A;</span></span>
                     </button>
                     <button class="btn bf" data-id="hyp" aria-label="Hyperbolic functions" title="Hyperbolic functions (ALPHA: C)">
                         <span class="al" aria-hidden="true">C</span>
@@ -198,9 +199,8 @@
                         <span class="sl" aria-hidden="true">STO</span>
                         <span class="bl" aria-hidden="true">RCL</span>
                     </button>
-                    <button class="btn bf" data-id="eng" aria-label="Engineering notation" title="Engineering notation (SHIFT: reverse ENG, ALPHA: colon / multi-statement)">
+                    <button class="btn bf" data-id="eng" aria-label="Engineering notation" title="Engineering notation (SHIFT: reverse ENG)">
                         <span class="sl" aria-hidden="true">&larr;</span>
-                        <span class="al" aria-hidden="true">:</span>
                         <span class="bl" aria-hidden="true">ENG</span>
                     </button>
                     <button class="btn bf" data-id="lparen" aria-label="Open parenthesis" title="Open parenthesis (SHIFT: percent)">
@@ -256,7 +256,7 @@
                 </button>
                 <button class="btn bn" data-id="6" aria-label="6" title="6 (SHIFT: relational operators / VERIFY)">
                     <span class="bl" aria-hidden="true">6</span>
-                    <span class="sbl" aria-hidden="true">VERIFY</span>
+                    <span class="sbl" aria-hidden="true">&#x231C;VERIFY&#x231D;</span>
                 </button>
                 <button class="btn bn bn-op" data-id="multiply" aria-label="Multiply" title="Multiply (SHIFT: nPr, ALPHA: GCD)">
                     <span class="sl" aria-hidden="true">nPr</span>
@@ -271,7 +271,7 @@
 
                 <!-- Row N3: 1, 2, 3, +, − -->
                 <button class="btn bn" data-id="1" aria-label="1" title="1 (SHIFT: STAT)">
-                    <span class="sl" aria-hidden="true">STAT</span>
+                    <span class="sl" aria-hidden="true">&#x231C;STAT&#x231D;</span>
                     <span class="bl" aria-hidden="true">1</span>
                 </button>
                 <button class="btn bn" data-id="2" aria-label="2" title="2">
@@ -295,16 +295,16 @@
                     <span class="bl" aria-hidden="true">0</span>
                 </button>
                 <button class="btn bn" data-id="dot" aria-label="Decimal point" title="Decimal point (SHIFT: Ran#, ALPHA: RanInt#)">
-                    <span class="sl" aria-hidden="true">Ran#</span>
-                    <!-- ALPHA RanInt# is wired in keymap.js but its faceplate position is
-                         unverified and won't fit above the "." key; legend deferred to the
-                         Phase 13 hardware sign-off (see docs/QA-PROTOCOL.md). -->
+                    <!-- Photo-confirmed (ANALYSIS.md): gold Ran# and pink RanInt sit side
+                         by side above the '.' key; .sl-pair splits them left/right. -->
+                    <span class="sl sl-pair" aria-hidden="true">Ran#</span>
+                    <span class="al al-pair" aria-hidden="true">RanInt</span>
                     <span class="bl" aria-hidden="true">&middot;</span>
                 </button>
                 <button class="btn bn" data-id="exp" aria-label="Times ten to the power" title="×10 to the power (SHIFT: pi, ALPHA: e)">
                     <span class="sl" aria-hidden="true">&pi;</span>
                     <span class="al" aria-hidden="true"><i>e</i></span>
-                    <span class="bl" aria-hidden="true">&times;10<sup>x</sup></span>
+                    <span class="bl" aria-hidden="true">&times;10<sup><i>x</i></sup></span>
                 </button>
                 <button class="btn bn bn-ans" data-id="ans" aria-label="Answer" title="Ans — last result (SHIFT: DRG conversion)">
                     <span class="sl" aria-hidden="true">DRG&#x25B6;</span>

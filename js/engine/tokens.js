@@ -97,7 +97,7 @@ register('const', ['π', 'e'], 1);
 // Ans
 register('ans', ['Ans'], 1);
 
-// Multi-statement separator (ALPHA ENG)
+// Multi-statement separator (ALPHA x³ — the pink ':' on the faceplate)
 register('colon', [':'], 1);
 
 // STAT summary variables (inserted via the SHIFT 1 menu in STAT mode).

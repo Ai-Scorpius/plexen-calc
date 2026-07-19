@@ -129,7 +129,7 @@ body {
 }
 .brand-model {
     font-size: 9px;
-    color: #999;
+    color: #e6e6e6; /* photo: bright white/silver print, not faint grey */
     font-weight: 600;
     letter-spacing: 0.5px;
 }
@@ -143,12 +143,12 @@ body {
     font-size: 8px;
     font-weight: 800;
     font-style: italic;
-    color: #999;
+    color: #e0e0e0; /* photo: prominent bright print */
     letter-spacing: 0.5px;
 }
 .tagline-edition {
     font-size: 7px;
-    color: #777;
+    color: #dcdcdc; /* photo: 'web edition' is white */
     font-weight: 600;
 }
 
@@ -351,7 +351,9 @@ sup.epow {
     text-align: center;
 }
 .cz-label-shift { color: #d4a017; }
-.cz-label-alpha { color: #e86a6a; } /* lifted from the old dim red for ≥4.5:1 on dark */
+/* Rose-pink per the device photo (sampled rgb(196,149,165), ANALYSIS.md) —
+   also measures ~5.4:1 on the dark body, better than the old red. */
+.cz-label-alpha { color: #c495a5; }
 .cz-label-mode { color: #ccc; font-size: 7px; }
 .cz-label-mode .setup-yellow { color: #d4a017; }
 .cz-label-on { color: #ccc; }
@@ -530,6 +532,10 @@ sup.epow {
 }
 .nav-btn:hover { filter: brightness(1.2); }
 .nav-btn:active { transform: scale(0.95); filter: brightness(0.85); }
+/* The device's lobes are unmarked glossy domes — no printed arrows. The
+   glyph spans stay in the DOM for structure but render nothing; each lobe's
+   accessible name comes from its aria-label. */
+.nav-btn span { display: none; }
 
 .nav-up { grid-area: up; }
 .nav-down { grid-area: down; }
@@ -632,9 +638,10 @@ sup.epow {
     filter: brightness(0.9);
 }
 
-/* Function button */
+/* Function button — essentially black on the device (sampled rgb(21,21,21)),
+   part of the strong two-tone look vs the medium-grey number pad */
 .bf {
-    background: linear-gradient(180deg, #333338 0%, #28282c 100%);
+    background: linear-gradient(180deg, #1d1d1f 0%, #131314 100%);
     height: 28px;
     border-radius: 5px;
 }
@@ -686,14 +693,21 @@ sup.epow {
     background: #e0e0e4;
 }
 
-/* DMS button: small o then three 9-shaped comma marks */
+/* DMS button: small raised degree circle then three comma-shaped marks
+   (photo: °,,, — the circle is superscript-small, the marks are curved) */
 .dms-label {
     font-size: 14px;
     letter-spacing: -0.5px;
 }
+.dms-deg {
+    font-size: 9px;
+    vertical-align: super;
+    line-height: 0;
+}
 .dms-marks {
-    font-size: 13px;
-    letter-spacing: 0.5px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
 /* Square root with vinculum bar */
@@ -727,15 +741,30 @@ sup.epow {
     vertical-align: super;
 }
 
-/* Alpha label (red, above button right side) */
+/* Alpha label (rose-pink, above button right side). Colour is photo-sampled
+   from the device (rgb(196,149,165)) and clears 4.5:1 on the dark faces. */
 .al {
     position: absolute;
     top: -12px;
     right: 2px;
     font-size: 7.5px;
     font-weight: 700;
-    color: #e86a6a; /* lifted from the old dim red for ≥4.5:1 on the dark button face */
+    color: #c495a5;
     pointer-events: none;
+}
+
+/* Side-by-side legend pair above the '.' key (gold Ran# left, pink RanInt
+   right — photo-confirmed both are printed on the real faceplate). */
+.sl-pair {
+    left: 30%;
+    font-size: 6.5px;
+}
+.al-pair {
+    top: -12px;
+    right: auto;
+    left: 70%;
+    transform: translateX(-50%);
+    font-size: 6.5px;
 }
 
 /* ==========================================================
@@ -755,17 +784,18 @@ sup.epow {
     padding: 0;
 }
 
-/* Number button */
+/* Number button — medium grey (sampled rgb(97,97,96)), clearly lighter than
+   the near-black function keys: the device's two-tone scheme */
 .bn {
-    background: linear-gradient(180deg, #3c3c44 0%, #30303a 100%);
+    background: linear-gradient(180deg, #6a6a69 0%, #595958 100%);
     height: 42px;
     border-radius: 6px;
     position: relative;
 }
 .bn .bl {
     font-size: 22px;
-    font-weight: 800;
-    color: #eee;
+    font-weight: 400; /* photo: large but thin/light-stroke digits, not heavy */
+    color: #fff;
 }
 
 /* Below-button shift label (yellow, sits below the button) */
@@ -781,45 +811,41 @@ sup.epow {
     pointer-events: none;
 }
 
-/* Operator buttons (×, ÷, +, −) — slightly different shade */
+/* Operator buttons (×, ÷, +, −) — same medium grey as the digits on the
+   device (the old darker shade wrongly set them apart) */
 .bn-op {
-    background: linear-gradient(180deg, #363640 0%, #2c2c36 100%);
+    background: linear-gradient(180deg, #6a6a69 0%, #595958 100%);
 }
 .bn-op .bl {
     font-size: 20px;
 }
 
-/* DEL button — muted green matching  */
+/* DEL/AC — olive/yellow-green, photo-sampled from the device (DEL
+   rgb(128,158,56), AC rgb(131,160,69)); the old grass-green read too blue.
+   ⚠️ Provisional until the grey-card calibration pass (QA-PROTOCOL §5). */
 .bn-del {
-    background: linear-gradient(180deg, #4a9a4a 0%, #3b7f3b 100%);
+    background: linear-gradient(180deg, #83a045 0%, #6d8836 100%);
 }
 .bn-del .bl {
     font-size: 15px;
     font-weight: 700;
 }
 
-/* AC button — muted green matching  */
 .bn-ac {
-    background: linear-gradient(180deg, #4a9a4a 0%, #3b7f3b 100%);
+    background: linear-gradient(180deg, #83a045 0%, #6d8836 100%);
 }
 .bn-ac .bl {
     font-size: 15px;
     font-weight: 700;
 }
 
-/* Ans button */
-.bn-ans {
-    background: linear-gradient(180deg, #3c3c44 0%, #30303a 100%);
-}
+/* Ans button — same pad grey as the digits (two-tone: only DEL/AC differ) */
 .bn-ans .bl {
     font-size: 15px;
     font-weight: 700;
 }
 
 /* Equals button */
-.bn-eq {
-    background: linear-gradient(180deg, #3c3c44 0%, #30303a 100%);
-}
 .bn-eq .bl {
     font-size: 20px;
     font-weight: 700;

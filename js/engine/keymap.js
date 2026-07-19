@@ -37,7 +37,10 @@ export const keyMap = {
     'sqrt':       { normal: '√(', shift: '∛(' }, // SHIFT √ = cube root
     'square':     { normal: '²' },
     'power':      { normal: '@pow' }, // xⁿ raised-exponent template (natural display)
-    'cube':       { normal: '³' },
+    // ALPHA x³ = multi-statement ':' — the faceplate photo (ANALYSIS.md
+    // "Confirmed accurate" list) shows the pink ':' printed above x³; the
+    // audit's [ALPHA][ENG] keystroke claim was its own error.
+    'cube':       { normal: '³', alpha: ':' },
     'abs':        { normal: 'Abs(' },
     'reciprocal': { normal: '⁻¹' },
     'factorial':  { normal: '!' },
@@ -58,7 +61,7 @@ export const keyMap = {
     'rparen': { normal: ')', shift: ',', alpha: 'X' },
 
     // Other function buttons
-    'eng': { normal: '@eng', shift: '@engback', alpha: ':' }, // ALPHA ENG = multi-statement :
+    'eng': { normal: '@eng', shift: '@engback' },
     'sd':  { normal: '@sd', shift: '@abcdc', alpha: 'Y' }, // SHIFT = ab/c⇔d/c
 
     // Commands
