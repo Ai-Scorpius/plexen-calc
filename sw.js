@@ -29,6 +29,7 @@ const PRECACHE = [
     'manifest.json',
     'css/calculator.css',
     'assets/fonts/noto-serif-italic-latin.woff2',
+    'assets/fonts/noto-sans-mono-lcd.woff2',
     'assets/icons/icon-192.png',
     'assets/icons/icon-512.png',
     'assets/icons/icon-maskable-512.png',

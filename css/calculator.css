@@ -30,6 +30,22 @@
         U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/* LCD text (Phase 13 readability pass): a self-hosted Noto Sans Mono
+   VARIABLE subset (27 KB) built from the display's closed glyph inventory —
+   printable ASCII plus the 38 special glyphs the engine can emit (superscript
+   exponents, √, Σ, σ, relations, DRG markers, ▲▼ …). Bold monospace matches
+   the device's chunky dot-matrix look and is identical on every OS (before,
+   non-Windows fell back to Courier New). Registered under a private family
+   name so a system-installed Noto Sans Mono can never shadow the subset.
+   Only ∛ (U+221B) is absent from the face — the stack's fallback serves it. */
+@font-face {
+    font-family: 'PLEXEN LCD';
+    font-style: normal;
+    font-weight: 100 900; /* variable: one file serves 400 and 700 */
+    font-display: swap;
+    src: url('../assets/fonts/noto-sans-mono-lcd.woff2') format('woff2');
+}
+
 /* Reset */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -166,41 +182,55 @@ body {
         inset 0 2px 6px rgba(0,0,0,0.6),
         0 1px 0 rgba(255,255,255,0.02);
 }
+/* LCD panel — the box render shows a pale COOL-GREY screen (modal #cfe2e6,
+   centre highlight toward #f4fcff) with near-black ink, not the green-sage
+   many photos suggest (that tint is lighting). Grey + black also lifts every
+   text contrast ratio ~25%. */
 .display {
-    background: linear-gradient(180deg, #cddcae, #c4d5a2);
+    background: linear-gradient(180deg, #c5d7d7 0%, #d4e5e8 8%, #dceaec 55%, #cfe2e6 100%);
     border-radius: 4px;
     padding: 4px 6px 4px;
     height: 88px;
     display: flex;
     flex-direction: column;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: inset 0 2px 3px rgba(0,0,0,0.18);
 }
 
 /* Status indicators */
 .display-status {
     display: flex;
     gap: 3px;
-    font-size: 6.5px;
-    height: 10px;
-    line-height: 10px;
+    font-size: 7.5px;
+    height: 11px;
+    line-height: 11px;
     padding-bottom: 1px;
-    border-bottom: 1px solid rgba(0,0,0,0.04);
+    border-bottom: 1px solid rgba(0,0,0,0.08);
     margin-bottom: 1px;
 }
 /* State is conveyed by presence (visibility), not color alone (WCAG 1.4.1):
    inactive indicators are hidden — which also drops them from the a11y tree —
    and the ink colour stays constant so an active flag never reads as a colour
    change a low-vision user could miss. */
-.ind { visibility: hidden; color: #2a3a1a; font-weight: 700; font-family: 'Consolas', monospace; }
+.ind { visibility: hidden; color: #0a0d0e; font-weight: 700; font-family: 'PLEXEN LCD', 'Consolas', monospace; }
 .ind.active { visibility: visible; }
-.ind-right { margin-left: auto; display: flex; gap: 3px; }
+/* The device draws the active angle-unit letter inside a thin box (the boxed
+   R is clearly visible in the reference render). */
+.ind[data-ind="D"], .ind[data-ind="R"], .ind[data-ind="G"] {
+    border: 1px solid currentColor;
+    padding: 0 1.5px;
+    border-radius: 1px;
+    line-height: 9px;
+}
+.ind-right { margin-left: auto; display: flex; gap: 3px; align-items: center; }
 
-/* Expression area */
+/* Expression area — sized to the render: single-height glyphs are ~22% of
+   the LCD interior (≈19px of our 88px panel), in the chunky bold mono. */
 .display-expr {
     flex: 1;
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 16px;
-    color: #1a2a0a;
+    font-family: 'PLEXEN LCD', 'Consolas', 'Courier New', monospace;
+    font-size: 19px;
+    font-weight: 700;
+    color: #0a0d0e;
     display: flex;
     align-items: center;
     overflow-x: auto;
@@ -210,8 +240,8 @@ body {
 .display-expr { -ms-overflow-style: none; scrollbar-width: none; }
 
 .cursor {
-    display: inline-block; width: 2px; height: 17px;
-    background: #1a2a0a; animation: blink 1s step-end infinite;
+    display: inline-block; width: 2px; height: 20px;
+    background: #0a0d0e; animation: blink 1s step-end infinite;
 }
 /* Low-space warning: filled block cursor near the 99-byte input limit */
 .cursor-low { width: 9px; }
@@ -232,28 +262,30 @@ body {
     font-size: 0.86em;
 }
 .efrac .enum, .efrac .eden { padding: 0 3px; line-height: 1.05; }
-.efrac .ebar { height: 1px; background: #1a2a0a; margin: 1px 0; }
+.efrac .ebar { height: 1px; background: #0a0d0e; margin: 1px 0; }
 
-/* Raised exponent box */
+/* Raised exponent box (0.68em of the 19px base ≈ 13px — the device's
+   dot-matrix exponents are proportionally large) */
 sup.epow {
-    font-size: 0.62em;
+    font-size: 0.68em;
     vertical-align: super;
     line-height: 0;
 }
 
-/* Empty placeholder slot */
+/* Empty placeholder slot — alpha lifted from 0.45 (which measured 2.5:1,
+   a WCAG failure) to 0.62 ≈ 5.6:1 on the grey LCD, still visibly "empty" */
 .eph {
     display: inline-block;
-    color: rgba(26,42,10,0.45);
+    color: rgba(10,13,14,0.62);
     padding: 0 1px;
 }
 
 /* Result line: stacked fraction + √ vinculum */
-.display-result .efrac { font-size: 0.7em; }
-.display-result .efrac .ebar { background: #1a2a0a; }
+.display-result .efrac { font-size: 0.8em; }
+.display-result .efrac .ebar { background: #0a0d0e; }
 .rroot { white-space: nowrap; }
 .rroot .rrad {
-    border-top: 1px solid #1a2a0a;
+    border-top: 1px solid #0a0d0e;
     padding: 0 1px;
     margin-left: -1px;
 }
@@ -267,13 +299,14 @@ sup.epow {
 .stat-grid {
     display: flex;
     flex-direction: column;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.25;
     width: 100%;
 }
 .stat-row { display: flex; gap: 2px; }
 .stat-header .stat-cell { font-weight: 700; text-align: center; }
-.stat-rn { width: 14px; color: rgba(26,42,10,0.6); text-align: right; flex-shrink: 0; }
+/* row numbers: alpha 0.6 measured 3.5:1 (WCAG fail) — 0.72 ≈ 6.5:1 on grey */
+.stat-rn { width: 15px; color: rgba(10,13,14,0.72); text-align: right; flex-shrink: 0; }
 .stat-cell {
     flex: 1;
     min-width: 0;
@@ -283,18 +316,19 @@ sup.epow {
     white-space: nowrap;
 }
 .stat-active {
-    background: #1a2a0a;
-    color: #cddcae;
+    background: #0a0d0e;
+    color: #d4e5e8;
     border-radius: 2px;
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-/* Result line */
+/* Result line — 21px bold (device: result caps ≈ same cell height as the
+   expression line; 21px/700 also clears the WCAG large-text threshold) */
 .display-result {
-    font-family: 'Consolas', 'Courier New', monospace;
-    font-size: 18px; font-weight: 700; color: #1a2a0a;
-    text-align: right; min-height: 20px; line-height: 20px;
-    border-top: 1px solid rgba(0,0,0,0.04); padding-top: 2px;
+    font-family: 'PLEXEN LCD', 'Consolas', 'Courier New', monospace;
+    font-size: 21px; font-weight: 700; color: #0a0d0e;
+    text-align: right; min-height: 24px; line-height: 24px;
+    border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2px;
 }
 
 /* ==========================================================
